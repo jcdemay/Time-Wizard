@@ -73,36 +73,36 @@ bypassing libc wrappers.
 All implementations share the same conceptual modes and options:
 
 - pass:
-do not modify time (optionally log only)
+do not modify time (optionally log only).
 
 - static:
-return a fixed epoch (e.g., epoch=1)
+return a fixed epoch (e.g., epoch=1).
 
 - offset:
-return real_time + offset_seconds
+return real_time + offset_seconds.
 
 - freeze:
-freeze time at the first observed wall-clock value,
-(some variants allow an explicit epoch fallback)
+freeze time at the first observed wall-clock value
+(some variants allow an explicit epoch fallback).
 
 - epoch:
-Epoch value or offset in seconds depending on the mode
+epoch value or offset in seconds depending on the mode.
 
 - timecl:
-patch time clocks value in returned structs
+patch time clocks value in returned structs.
 
 - allclocks:
-Also force non-wall clocks (e.g., CLOCK_MONOTONIC, CLOCK_BOOTTIME),
+also force non-wall clocks (e.g., CLOCK_MONOTONIC, CLOCK_BOOTTIME),
 not just real-time clocks.
 
 - filets:
-patch timestamps fields in returned structs
+patch timestamps fields in returned structs.
 
 - clamp:
-if file timestamp > forced_now then clamp to forced_now
+if file timestamp > forced_now then clamp to forced_now.
 
 - clampnsec:
-strict clamp comparing (sec,nsec) as pairs
+strict clamp comparing (sec,nsec) as pairs.
 
 ## WHY MULTIPLE IMPLEMENTATIONS
 
@@ -110,69 +110,69 @@ The same behavior can be achieved with several different technologies,
 each with trade-offs:
 
 - LD_PRELOAD:
-best for dynamic binaries; simple to use; symbol-level
+best for dynamic binaries; simple to use; symbol-level.
 
-- ptrace (PTRACE_SEIZE / PTRACE_SYSCALL):
-syscall-level; covers static binaries; heavy overhead; misses vDSO-only
+- Ptrace (PTRACE_SEIZE / PTRACE_SYSCALL):
+syscall-level; covers static binaries; heavy overhead; misses vDSO-only.
 
 - Intel Pin:
-DBI; can hook functions and syscalls; very powerful; external dependency
+DBI; can hook functions and syscalls; very powerful; external dependency.
 
 - DynamoRIO:
-DBI; similar power to Pin; open-source; different engineering trade-offs
+DBI; similar power to Pin; open-source; different engineering trade-offs.
 
-- seccomp user notification (SECCOMP_RET_USER_NOTIF):
+- Seccomp user notification (SECCOMP_RET_USER_NOTIF):
 syscall-level policy + userspace supervisor; no preload needed
-but cannot see vDSO-only time reads (no syscall)
+but cannot see vDSO-only time reads (no syscall).
 
 ## TEMPLATE PHILOSOPHY (ADDING A NEW HOOK)
 
 All backends are structured so that adding a new intercepted function/syscall
 follows the same pattern:
 
-- Identify the syscall numbers and/or symbol names (SYS_, _NR, aliases)
+- Identify the syscall numbers and/or symbol names (SYS_, _NR, aliases).
 
-- Implement the wrapper/handler
+- Implement the wrapper/handler.
 
-- Time mapping using the shared mode engine
+- Time mapping using the shared mode engine.
 
-- Patch output structures safely (do not write more than copied)
+- Patch output structures safely (do not write more than copied).
 
-- Clamp logic (sec-only or (sec,nsec))
+- Clamp logic (sec-only or (sec,nsec)).
 
-- Register it in the global hook list / table
+- Register it in the global hook list / table.
 
-- Keep behavior consistent across all backends
+- Keep behavior consistent across all backends.
 
 ## LIMITATIONS
 
-- vDSO-only time reads are invisible to syscall-level backends (ptrace/seccomp)
+- VDSO-only time reads are invisible to syscall-level backends (ptrace/seccomp).
 
-- Forcing non-wall clocks (allclocks) can break software assumptions
+- Forcing non-wall clocks (allclocks) can break software assumptions.
 
-- ptrace requires privileges and can be slow
+- Ptrace requires privileges and can be slow.
 
-- seccomp user notification needs a recent kernel and careful emulation
+- Seccomp user notification needs a recent kernel and careful emulation.
 
 ## INSTRUCTIONS
 
-- Look at the build/compile script to see exactly how to compile each backend
+- Look at the build/compile script to see exactly how to compile each backend.
 
-- Look at the test script to see how to run and compare them
+- Look at the test script to see how to run and compare them.
 
-- The test script also relies on two small helper binaries, mini_date and mini_file
+- The test script also relies on two small helper binaries, mini_date and mini_file.
 
-- They must be compiled statically to validate syscall-level / static-binary hooking paths
+- They must be compiled statically to validate syscall-level / static-binary hooking paths.
 
 ## SAFETY / DISCLAIMER
 
 These tools intentionally alter a process perception of time. This can break:
 
-- Timeouts, scheduling, TLS/cert validation, logs, caches
+- Timeouts, scheduling, TLS/cert validation, logs, caches.
 
-- Software mixing CLOCK_REALTIME and CLOCK_MONOTONIC
+- Software mixing CLOCK_REALTIME and CLOCK_MONOTONIC.
 
-- Programs that assume monotonicity or real-world time continuity
+- Programs that assume monotonicity or real-world time continuity.
 
 - Use in controlled environments (testing, reproducibility, RE, sandboxing).
 
