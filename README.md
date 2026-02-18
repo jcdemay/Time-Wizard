@@ -6,7 +6,7 @@ Linux Time Clocks + File Timestamps Hooking Collection
 This repository contains multiple implementations of the same idea:
 
 1. Force the "time seen by a process" (time clocks):
-time(), gettimeofday(), clock_gettime(), and related paths
+time(), gettimeofday(), clock_gettime(), and related paths.
 
 2. Force the "timestamps seen by a process" (file timestamps):
 stat*, fstatat*, statx, utimensat, etc.
@@ -96,7 +96,7 @@ also force non-wall clocks (e.g., CLOCK_MONOTONIC, CLOCK_BOOTTIME),
 not just real-time clocks.
 
 - filets:
-patch timestamps fields in returned structs.
+patch file timestamps fields in returned structs.
 
 - clamp:
 if file timestamp > forced_now then clamp to forced_now.
