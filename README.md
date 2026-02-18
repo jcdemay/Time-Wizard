@@ -1,7 +1,7 @@
-#TIME-WIZARD
+# TIME-WIZARD
 Linux Time Clocks + File Timestamps Hooking Collection
 
-#OVERVIEW
+## OVERVIEW
 
 This repository contains multiple implementations of the same idea:
 
@@ -17,11 +17,11 @@ hooking technologies. The different versions were written progressively as
 different tools or kernel features became practical or available, and as new
 edge-cases appeared (static binaries, syscall-only paths, vDSO, ABI variants).
 
-#KEY CONCEPTS
+## KEY CONCEPTS
 
-#DYNAMIC vs STATIC INTERCEPTION
+### DYNAMIC vs STATIC INTERCEPTION
 
-A. Dynamic hooking (user-space symbols)
+#### A. Dynamic hooking (user-space symbols)
 
 You intercept libc (or other shared library) functions like:
 clock_gettime(), gettimeofday(), time(), stat(), statx(), ...
@@ -37,7 +37,7 @@ Cons:
 - Does not cover fully static binaries
 - Can be bypassed by direct syscalls or by vDSO paths
 
-B. Static and syscall-level hooking
+#### B. Static and syscall-level hooking
 
 You intercept the kernel syscall boundary (SYS_* / _NR*) instead of libc.
 
@@ -51,24 +51,24 @@ Cons:
 - If the program uses vDSO (no syscall), you see nothing
 - Often higher overhead (ptrace) or more complexity (seccomp emulation)
 
-#LIBC vs SYSCALL vs VDSO
+### LIBC vs SYSCALL vs VDSO
 
 Time is a good example because a program can obtain time through different paths:
 
-A. App -> libc -> syscall
+#### A. App -> libc -> syscall
 Example: libc clock_gettime() ultimately does a SYS_clock_gettime syscall.
 
-B. App -> vDSO (NO syscall)
+#### B. App -> vDSO (NO syscall)
 Linux can map a vDSO (Virtual Dynamic Shared Object) into the process.
 Certain time functions can be served entirely from user-space with no
 kernel syscall. In that case, syscall-level interceptors (ptrace/seccomp)
 will NOT see anything.
 
-C. App -> direct syscall
+#### C. App -> direct syscall
 Static binaries or low-level code may do syscall(SYS_...) directly,
 bypassing libc wrappers.
 
-#PARAMETERS (COMMON BEHAVIOR ACROSS IMPLEMENTATIONS)
+## PARAMETERS (COMMON BEHAVIOR ACROSS IMPLEMENTATIONS)
 
 All implementations share the same conceptual modes and options:
 
@@ -104,7 +104,7 @@ if file timestamp > forced_now then clamp to forced_now
 - clampnsec:
 strict clamp comparing (sec,nsec) as pairs
 
-WHY MULTIPLE IMPLEMENTATIONS
+## WHY MULTIPLE IMPLEMENTATIONS
 
 The same behavior can be achieved with several different technologies,
 each with trade-offs:
@@ -125,7 +125,7 @@ DBI; similar power to Pin; open-source; different engineering trade-offs
 syscall-level policy + userspace supervisor; no preload needed
 but cannot see vDSO-only time reads (no syscall)
 
-TEMPLATE PHILOSOPHY (ADDING A NEW HOOK)
+## TEMPLATE PHILOSOPHY (ADDING A NEW HOOK)
 
 All backends are structured so that adding a new intercepted function/syscall
 follows the same pattern:
@@ -144,7 +144,7 @@ follows the same pattern:
 
 - Keep behavior consistent across all backends
 
-#LIMITATIONS
+## LIMITATIONS
 
 - vDSO-only time reads are invisible to syscall-level backends (ptrace/seccomp)
 
@@ -154,7 +154,7 @@ follows the same pattern:
 
 - seccomp user notification needs a recent kernel and careful emulation
 
-#INSTRUCTIONS
+## INSTRUCTIONS
 
 - Look at the build/compile script to see exactly how to compile each backend
 
@@ -164,7 +164,7 @@ follows the same pattern:
 
 - They must be compiled statically to validate syscall-level / static-binary hooking paths
 
-#SAFETY / DISCLAIMER
+## SAFETY / DISCLAIMER
 
 These tools intentionally alter a process perception of time. This can break:
 
@@ -176,7 +176,7 @@ These tools intentionally alter a process perception of time. This can break:
 
 - Use in controlled environments (testing, reproducibility, RE, sandboxing).
 
-#LICENSE
+## LICENSE
 
 Copyright (c) 2013 Jonathan-Christofer Demay (jcdemay@gmail.com)
 
